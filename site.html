@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GLOCAL — Full Site Prototype (Proposed IA)</title>
+<style>
+  :root{
+    --yellow:#fad802; --yellow-soft:#fff6c2; --yellow-deep:#c9ad00;
+    --ink:#1b1b1b; --ink-soft:#555; --line:#e7e7e1; --bg:#fff; --panel:#fbfbf8;
+    --good:#1f7a4d; --good-soft:#e4f3ea; --warn:#b25b00; --warn-soft:#fbecd9;
+    --shadow:0 1px 3px rgba(0,0,0,.06),0 10px 30px rgba(0,0,0,.06); --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4{line-height:1.2;margin:0 0 .45em}
+  p{margin:0 0 1em;color:var(--ink-soft)}
+  a{color:inherit}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+
+  /* notice bar */
+  .notice{background:var(--ink);color:#fff;font-size:12.5px;text-align:center;padding:7px 14px}
+  .notice b{color:var(--yellow)}
+
+  /* header / nav */
+  header.site{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .navrow{display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding:12px 0}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:18px;margin-right:14px;cursor:pointer;letter-spacing:-.01em}
+  .brand .glyph{width:30px;height:30px;border-radius:50%;background:var(--yellow);display:grid;place-items:center;font-size:15px;color:var(--ink);border:2px solid var(--ink)}
+  .brand span{color:var(--yellow-deep)}
+  .navbtn{position:relative;appearance:none;border:0;background:transparent;font:inherit;font-size:14px;font-weight:600;color:var(--ink-soft);padding:9px 12px;border-radius:9px;cursor:pointer}
+  .navbtn:hover{background:var(--yellow-soft);color:var(--ink)}
+  .navbtn.active{color:var(--ink)}
+  .navbtn .car{font-size:9px;opacity:.55;margin-left:4px}
+  .navbtn.cta{background:var(--ink);color:#fff;margin-left:auto}
+  .navbtn.cta:hover{background:#000;color:#fff}
+  .navitem{position:relative}
+  .dd{display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:7px;min-width:248px;margin-top:6px;z-index:70}
+  .navitem.open .dd{display:block}
+  .dd a{display:block;text-decoration:none;font-size:14px;font-weight:600;color:var(--ink);padding:10px 12px;border-radius:8px;cursor:pointer}
+  .dd a small{display:block;font-weight:500;color:var(--ink-soft);font-size:12px;margin-top:1px}
+  .dd a:hover{background:var(--yellow-soft)}
+
+  /* breadcrumb */
+  .crumb{background:var(--panel);border-bottom:1px solid var(--line);font-size:12.5px;font-weight:600;color:var(--ink-soft)}
+  .crumb .wrap{padding:9px 22px}
+  .crumb b{color:var(--warn)}
+
+  /* page system */
+  .page{display:none;animation:fade .25s ease}
+  .page.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  /* hero block */
+  .phero{background:linear-gradient(180deg,var(--yellow-soft),#fff);border-bottom:1px solid var(--line);padding:52px 0}
+  .eyebrow{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--warn);background:#fff;border:1px solid var(--line);padding:5px 12px;border-radius:999px;margin-bottom:16px}
+  .phero h1{font-size:clamp(28px,5vw,46px);max-width:18ch}
+  .phero p.sub{font-size:18px;max-width:62ch;color:var(--ink-soft)}
+  .btnrow{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+  .btn{font:inherit;font-size:14.5px;font-weight:700;cursor:pointer;border-radius:10px;padding:12px 22px;border:1.5px solid var(--ink);background:#fff;text-decoration:none;display:inline-block}
+  .btn.primary{background:var(--yellow);border-color:var(--yellow)}
+  .btn.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .btn:hover{transform:translateY(-1px)}
+
+  section.block{padding:46px 0;border-bottom:1px solid var(--line)}
+  .kick{font-size:11.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--warn);margin-bottom:10px}
+  .block h2{font-size:28px;max-width:24ch}
+  .lead{font-size:17px;max-width:64ch;color:var(--ink-soft)}
+
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:26px}
+  .card{border:1px solid var(--line);border-radius:var(--radius);padding:22px;background:var(--panel);cursor:pointer;transition:.18s}
+  .card:hover{border-color:var(--yellow-deep);box-shadow:var(--shadow);transform:translateY(-2px)}
+  .card .ic{width:42px;height:42px;border-radius:11px;background:var(--yellow);display:grid;place-items:center;font-size:20px;margin-bottom:12px}
+  .card h3{font-size:17px}
+  .card p{font-size:13.5px;margin:0}
+  .card .go{font-size:13px;font-weight:700;color:var(--warn);margin-top:10px;display:inline-block}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:start}
+  .stat{display:flex;gap:14px;align-items:baseline;margin-bottom:10px}
+  .stat b{font-size:30px;color:var(--ink);font-weight:800;flex:0 0 auto;min-width:84px}
+  .stat span{font-size:14px;color:var(--ink-soft)}
+
+  .modules{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+  .mod{border:1px solid var(--line);border-radius:var(--radius);padding:20px;background:#fff}
+  .mod .h{font-size:30px}
+  .mod h4{font-size:15px;margin:8px 0 6px}
+  .mod p{font-size:13px;margin:0}
+
+  .tracks{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px}
+  .track{border:1px solid var(--line);border-radius:11px;padding:16px 18px;font-weight:700;font-size:15px;background:var(--panel);display:flex;justify-content:space-between;align-items:center}
+  .track small{display:block;font-weight:500;color:var(--ink-soft);font-size:12.5px;margin-top:3px}
+
+  .steps{counter-reset:s;margin-top:22px;display:grid;gap:14px}
+  .stp{display:grid;grid-template-columns:42px 1fr;gap:16px;align-items:start;border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;background:var(--panel)}
+  .stp .n{width:38px;height:38px;border-radius:10px;background:var(--ink);color:var(--yellow);font-weight:800;display:grid;place-items:center}
+  .stp h4{margin:3px 0 4px;font-size:16px}
+  .stp p{margin:0;font-size:14px}
+
+  .faq{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-top:20px}
+  .faq details{border-bottom:1px solid var(--line)}
+  .faq details:last-child{border-bottom:0}
+  .faq summary{cursor:pointer;font-weight:700;font-size:15px;padding:16px 20px;background:#fff;list-style:none}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:"+";float:right;color:var(--warn);font-weight:800}
+  .faq details[open] summary::after{content:"–"}
+  .faq .a{padding:0 20px 16px;font-size:14px;color:var(--ink-soft)}
+
+  .callout{background:var(--yellow-soft);border-radius:var(--radius);padding:26px;margin-top:26px;text-align:center}
+  .callout h3{font-size:20px}
+  .callout p{max-width:54ch;margin:0 auto 14px}
+
+  .team{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}
+  .member{border:1px solid var(--line);border-radius:var(--radius);padding:20px;background:var(--panel);text-align:center}
+  .member .av{width:60px;height:60px;border-radius:50%;background:var(--yellow);margin:0 auto 10px;display:grid;place-items:center;font-weight:800;font-size:20px}
+  .member h4{font-size:15px;margin:0}
+  .member p{font-size:12.5px;margin:2px 0 0}
+
+  .formcard{border:1px solid var(--line);border-radius:var(--radius);padding:24px;background:var(--panel);max-width:520px;margin-top:22px}
+  .formcard label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}
+  .formcard input,.formcard textarea{width:100%;border:1.5px solid var(--line);border-radius:9px;padding:11px 13px;font:inherit;font-size:14px}
+  .formcard input:focus,.formcard textarea:focus{outline:none;border-color:var(--yellow)}
+
+  footer.site{background:var(--ink);color:#cfcfcf;padding:40px 0 28px}
+  footer.site .cols{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:28px}
+  footer.site h5{color:#fff;font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 12px}
+  footer.site a{display:block;color:#cfcfcf;text-decoration:none;font-size:13.5px;padding:4px 0;cursor:pointer}
+  footer.site a:hover{color:var(--yellow)}
+  footer.site .fine{border-top:1px solid #333;margin-top:26px;padding-top:18px;font-size:12px;color:#999}
+
+  @media(max-width:820px){
+    .cards,.modules,.tracks,.team{grid-template-columns:1fr 1fr}
+    .grid2,footer.site .cols{grid-template-columns:1fr}
+    .navbtn.cta{margin-left:0}
+  }
+  @media(max-width:520px){.cards,.modules,.tracks,.team{grid-template-columns:1fr}}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<div class="notice">Prototype — proposed information architecture for <b>glocalfoundation.ca</b> · demonstration only, not the live site</div>
+
+<header class="site">
+  <div class="wrap">
+    <nav class="navrow" id="nav">
+      <div class="brand" data-go="home"><span class="glyph">G</span>GLO<span>CAL</span></div>
+
+      <div class="navitem">
+        <button class="navbtn" data-menu>Programs <span class="car">▼</span></button>
+        <div class="dd">
+          <a data-go="volunteering">Online Volunteering<small>Volunteer at your own pace (NYSN)</small></a>
+          <a data-go="microgrants">Microgrants<small>Up to $5,000 for community projects</small></a>
+          <a data-go="essay">Civic Essay Contest<small>Write, submit, win</small></a>
+          <a data-go="youcount">YouCount.ca<small>Our civic engagement platform</small></a>
+        </div>
+      </div>
+
+      <button class="navbtn" data-go="involved">Get Involved</button>
+
+      <div class="navitem">
+        <button class="navbtn" data-menu>Resources <span class="car">▼</span></button>
+        <div class="dd">
+          <a data-go="how">How It Works &amp; FAQs<small>Start volunteering</small></a>
+          <a data-go="education">Educational Resources &amp; Training</a>
+          <a data-go="reports">Reports &amp; Publications<small>Read our research</small></a>
+        </div>
+      </div>
+
+      <button class="navbtn" data-go="events">Events</button>
+
+      <div class="navitem">
+        <button class="navbtn" data-menu>About <span class="car">▼</span></button>
+        <div class="dd">
+          <a data-go="about">Our Story &amp; Mission</a>
+          <a data-go="team">Team &amp; Board</a>
+          <a data-go="careers">Careers</a>
+          <a data-go="contact">Contact Us</a>
+        </div>
+      </div>
+
+      <button class="navbtn cta" data-go="involved">Volunteer now</button>
+    </nav>
+  </div>
+</header>
+
+<div class="crumb"><div class="wrap" id="crumb">Home</div></div>
+
+<main id="main">
+
+<!-- HOME -->
+<div class="page active" data-page="home">
+  <div class="phero"><div class="wrap">
+    <span class="eyebrow">Digital civic engagement in action</span>
+    <h1>Every voice shapes Canada's future</h1>
+    <p class="sub">GLOCAL is a national not-for-profit connecting local action with global understanding. Volunteer at your own pace, fund a community project, or join a nationwide youth movement.</p>
+    <div class="btnrow">
+      <a class="btn primary" data-go="involved">Get involved</a>
+      <a class="btn" data-go="microgrants">Apply for a microgrant</a>
+    </div>
+  </div></div>
+
+  <section class="block"><div class="wrap">
+    <div class="kick">Our programs</div>
+    <h2>Three ways to take part</h2>
+    <div class="cards">
+      <div class="card" data-go="volunteering"><div class="ic">🤝</div><h3>Online Volunteering</h3><p>Join the National Youth Service Network and complete 120 hours at your own pace.</p><span class="go">Explore →</span></div>
+      <div class="card" data-go="microgrants"><div class="ic">💡</div><h3>CANConnect Microgrants</h3><p>Apply for up to $5,000 to launch a civic project in your community.</p><span class="go">Explore →</span></div>
+      <div class="card" data-go="essay"><div class="ic">✍️</div><h3>Civic Essay Contest</h3><p>Share your perspective on civic life and compete for recognition.</p><span class="go">Explore →</span></div>
+    </div>
+  </div></section>
+
+  <section class="block"><div class="wrap">
+    <div class="grid2">
+      <div>
+        <div class="kick">Who we are</div>
+        <h2>Local action, global perspective</h2>
+        <p class="lead">The name GLOCAL reflects our mission: connect what happens in your neighbourhood with a wider view of the world. We're founded and run by young Canadians from many backgrounds.</p>
+        <a class="btn" data-go="about">About GLOCAL</a>
+      </div>
+      <div>
+        <div class="stat"><b>120</b><span>volunteer hours across three flexible modules</span></div>
+        <div class="stat"><b>160</b><span>CANConnect microgrants for Canadian youth</span></div>
+        <div class="stat"><b>6</b><span>volunteer tracks: research, data, digital, outreach, communication, compliance</span></div>
+        <div class="stat"><b>12–30</b><span>the age range of youth we support</span></div>
+      </div>
+    </div>
+  </div></section>
+
+  <section class="block" style="border-bottom:0"><div class="wrap">
+    <div class="callout">
+      <h3>Ready to start?</h3>
+      <p>Get involved is the single starting point — pick how you want to take part and we'll guide you from there.</p>
+      <a class="btn dark" data-go="involved">Get involved</a>
+    </div>
+  </div></section>
+</div>
+
+<!-- ONLINE VOLUNTEERING -->
+<div class="page" data-page="volunteering">
+  <div class="phero"><div class="wrap">
+    <span class="eyebrow">Programs · National Youth Service Network</span>
+    <h1>All youth can volunteer</h1>
+    <p class="sub">A flexible way for Canadian youth aged 12–30 to make a difference, build skills, and stand out — funded in part by the Canada Service Corps.</p>
+    <div class="btnrow"><a class="btn primary" data-go="involved">Apply now</a><a class="btn" data-go="how">How it works</a></div>
+  </div></div>
+
+  <section class="block"><div class="wrap">
+    <div class="kick">What you'll do</div>
+    <h2>120 hours across three modules</h2>
+    <div class="modules">
+      <div class="mod"><div class="h">🎓</div><h4>30 hrs · Training &amp; civic exploration</h4><p>Workshops in leadership, communications, grants, design thinking, research, and data skills, with guest speakers and mentors.</p></div>
+      <div class="mod"><div class="h">💪</div><h4>60 hrs · Passion-driven projects</h4><p>Choose a civic issue that matters to you and volunteer locally, launch your own initiative, or join a track-based micro-project.</p></div>
+      <div class="mod"><div class="h">🛠️</div><h4>30 hrs · Bite-sized challenges</h4><p>Quick missions as a youth consultant, builder, researcher, or designer — some take as little as 15 minutes.</p></div>
+    </div>
+  </div></section>
+
+  <section class="block"><div class="wrap">
+    <div class="kick">Choose your lane</div>
+    <h2>Six volunteer tracks</h2>
+    <div class="tracks">
+      <div class="track">Research <small>Investigate civic questions</small></div>
+      <div class="track">Data <small>Build civic datasets</small></div>
+      <div class="track">Digital <small>Prototypes &amp; tools</small></div>
+      <div class="track">Outreach <small>Connect with communities</small></div>
+      <div class="track">Communication <small>Tell the story</small></div>
+      <div class="track">Compliance <small>Keep things sound</small></div>
+    </div>
+  </div></section>
+
+  <section class="block" style="border-bottom:0"><div class="wrap">
+    <div class="kick">What you'll gain</div>
+    <h2>Recognition that travels with you</h2>
+    <p class="lead">A digital certificate for 120 verified hours signed by the Minister of Jobs and Families, a skill portfolio for school and job applications, mentorship across Canada, and priority access to microgrants and summer jobs.</p>
+    <a class="btn dark" data-go="involved">Start volunteering</a>
+  </div></section>
+</div>
+
+<!-- MICROGRANTS -->
+<div class="page" data-page="microgrants">
+  <div class="phero"><div class="wrap">
+    <span class="eyebrow">Programs · CANConnect</span>
+    <h1>Up to $5,000 for your community project</h1>
+    <p class="sub">CANConnect Microgrants empower Canadian youth — especially underserved youth — to launch creative civic engagement projects nationwide.</p>
+    <div class="btnrow"><a class="btn primary" data-go="involved">Apply now</a><a class="btn" data-go="how">Book an info session</a></div>
+  </div></div>
+
+  <section class="block"><div class="wrap">
+    <div class="kick">What it is</div>
+    <h2>160 microgrants for 160 youth</h2>
+    <p class="lead">Funded by the Canada Service Corps at Employment and Social Development Canada and administered by GLOCAL, the program distributes microgrants to youth across the country, with mentorship and digital civic training to help you carry out your initiative.</p>
+  </div></section>
+
+  <section class="block" style="border-bottom:0"><div class="wrap">
+    <div class="kick">How to apply</div>
+    <h2>From idea to funded in three steps</h2>
+    <div class="steps">
+      <div class="stp"><div class="n">1</div><div><h4>Shape your idea</h4><p>Pick a local, regional, or community concern and outline a project that addresses it.</p></div></div>
+      <div class="stp"><div class="n">2</div><div><h4>Submit your application</h4><p>Complete the CANConnect application form with your plan and budget.</p></div></div>
+      <div class="stp"><div class="n">3</div><div><h4>Get mentored &amp; build</h4><p>Receive funding plus guidance from the GLOCAL team to bring your project to life.</p></div></div>
+    </div>
+    <div class="btnrow"><a class="btn dark" data-go="involved">Start an application</a></div>
+  </div></section>
+</div>
+
+<!-- ESSAY -->
+<div class="page" data-page="essay">
+  <div class="phero"><div class="wrap">
+    <span class="eyebrow">Programs</span>
+    <h1>Civic Essay Contest</h1>
+    <p class="sub">Put your perspective on civic life into words. Submit an essay and compete for recognition among young Canadian writers and thinkers.</p>
+    <div class="btnrow"><a class="btn primary" data-go="involved">Enter the contest</a><a class="btn" data-go="how">Read the guidelines</a></div>
+  </div></div>
+  <section class="block" style="border-bottom:0"><div class="wrap">
+    <div class="kick">Why enter</div>
+    <h2>Your voice on the issues that matter</h2>
+    <p class="lead">The contest invites non-partisan reflection on civic engagement, democracy, and community. Winning essays are featured across GLOCAL's channels, and every entrant builds a writing sample for school and job applications.</p>
+  </div></section>
+</div>
+
+<!-- YOUCOUNT -->
+<div class="page" data-page="youcount">
+  <div class="phero"><div class="wrap">
+    <span class="eyebrow">Programs · Platform</span>
+    <h1>YouCount.ca</h1>
+    <p class="sub">Our civic engagement platform — a non-partisan, not-for-profit space where young Canadians find opportunities, log hours, and connect nationwide.</p>
+    <div class="btnrow"><a class="btn primary" data-go="involved">Explore the platform</a></div>
+  </div></div>
+  <section class="block" style="border-bottom:0"><div class="wrap">
+    <div class="kick">What it does</div>
+    <h2>One home for civic participation</h2>
+    <p class="lead">YouCount.ca brings together volunteer tasks, training events, and community data in one place. It's where the buffet-style "all you can volunteer" experience lives — browse tasks, pick what fits your schedule, and track your impact.</p>
+  </div></section>
+</div>
+
+<!-- GET INVOLVED -->
+<div class="page" data-page="involved">
+  <div class="phero"><div class="wrap">
+    <span class="eyebrow">Get involved</span>
+    <h1>Choose how you want to take part</h1>
+    <p class="sub">Whatever your time and interests, there's a path for you. Start here and we'll point you in the right direction.</p>
+  </div></div>
+  <section class="block" style="border-bottom:0"><div class="wrap">
+    <div class="cards">
+      <div class="card" data-go="volunteering"><div class="ic">🤝</div><h3>Volunteer online</h3><p>Join NYSN and complete flexible hours at your own pace.</p><span class="go">Go →</span></div>
+      <div class="card" data-go="microgrants"><div class="ic">💡</div><h3>Apply for a microgrant</h3><p>Fund a civic project with up to $5,000.</p><span class="go">Go →</span></div>
+      <div class="card" data-go="events"><div class="ic">📅</div><h3>Attend an event</h3><p>Workshops and info sessions, weekdays at noon and 3 PM EDT.</p><span class="go">Go →</span></div>
+      <div class="card" data-go="essay"><div class="ic">✍️</div><h3>Enter the essay contest</h3><p>Share your perspective on civic life.</p><span class="go">Go →</span></div>
+      <div class="card" data-go="how"><div class="ic">❓</div><h3>Still deciding?</h3><p>See how it works and read the FAQs.</p><span class="go">Go →</span></div>
+      <div class="card" data-go="contact"><div class="ic">✉️</div><h3>Talk to us</h3><p>Get in touch with the GLOCAL team.</p><span class="go">Go →</span></div>
+    </div>
+  </div></section>
+</div>
+
+<!-- HOW IT WORKS / FAQ -->
+<div class="page" data-page="how">
+  <div class="phero"><div class="wrap">
+    <span class="eyebrow">Resources</span>
+    <h1>How it works &amp; FAQs</h1>
+    <p class="sub">Everything a new volunteer needs to get started, in one place.</p>
+  </div></div>
+  <section class="block"><div class="wrap">
+    <div class="kick">Getting started</div>
+    <h2>Four steps to your first hours</h2>
+    <div class="steps">
+      <div class="stp"><div class="n">1</div><div><h4>Create your account</h4><p>Register on the YouCount volunteer platform — it's free.</p></div></div>
+      <div class="stp"><div class="n">2</div><div><h4>Tell us your interests</h4><p>Share your academic interests, career goals, and passions so we can co-design your plan.</p></div></div>
+      <div class="stp"><div class="n">3</div><div><h4>Pick tasks &amp; events</h4><p>Browse the task pool and event calendar, then choose what fits your schedule.</p></div></div>
+      <div class="stp"><div class="n">4</div><div><h4>Log your hours</h4><p>Track progress toward your 120 hours and certificate from your dashboard.</p></div></div>
+    </div>
+  </div></section>
+  <section class="block" style="border-bottom:0"><div class="wrap">
+    <div class="kick">Common questions</div>
+    <h2>FAQs</h2>
+    <div class="faq">
+      <details><summary>Who can volunteer?</summary><div class="a">Canadian youth aged 12–30 looking for a flexible way to make a difference and build skills.</div></details>
+      <details><summary>How many hours do I need?</summary><div class="a">The full program is 120 hours across three modules, completed at your own pace before December 2026.</div></details>
+      <details><summary>What do I get at the end?</summary><div class="a">A digital certificate for 120 verified hours signed by the Minister of Jobs and Families, plus a skill portfolio and priority access to microgrants and summer jobs.</div></details>
+      <details><summary>Do I have to commit to a fixed schedule?</summary><div class="a">No. You mix and match activities based on your availability — some bite-sized tasks take as little as 15 minutes.</div></details>
+      <details><summary>How do I log my hours?</summary><div class="a">From your profile dashboard on the YouCount platform, where you can track progress toward your certificate.</div></details>
+    </div>
+  </div></section>
+</div>
+
+<!-- EDUCATION -->
+<div class="page" data-page="education">
+  <div class="phero"><div class="wrap">
+    <span class="eyebrow">Resources</span>
+    <h1>Educational resources &amp; training</h1>
+    <p class="sub">Guides, toolkits, and training sessions to build the skills behind civic engagement.</p>
+  </div></div>
+  <section class="block" style="border-bottom:0"><div class="wrap">
+    <div class="cards">
+      <div class="card"><div class="ic">📚</div><h3>Skill workshops</h3><p>Leadership, communications, grants management, design thinking, research, and data skills.</p></div>
+      <div class="card"><div class="ic">🧰</div><h3>E-toolkits</h3><p>Community guides and digital tools you can use and adapt for local needs.</p></div>
+      <div class="card"><div class="ic">🎤</div><h3>Seminars &amp; speakers</h3><p>Sessions with prominent guests, mentors, and youth change-makers.</p></div>
+    </div>
+  </div></section>
+</div>
+
+<!-- REPORTS -->
+<div class="page" data-page="reports">
+  <div class="phero"><div class="wrap">
+    <span class="eyebrow">Resources</span>
+    <h1>Reports &amp; publications</h1>
+    <p class="sub">The research GLOCAL publishes on civic engagement, democratic participation, and youth in Canada.</p>
+  </div></div>
+  <section class="block" style="border-bottom:0"><div class="wrap">
+    <div class="cards">
+      <div class="card"><div class="ic">📄</div><h3>GLOCAL Publications</h3><p>Research outputs and reports from our programs and partners.</p><span class="go">Browse →</span></div>
+      <div class="card"><div class="ic">🌟</div><h3>Community Showcase</h3><p>Stories and outcomes from microgrant recipients across Canada.</p><span class="go">Browse →</span></div>
+      <div class="card"><div class="ic">📊</div><h3>Open civic data</h3><p>Datasets like "Find Your Political Representative," built with volunteers.</p><span class="go">Browse →</span></div>
+    </div>
+  </div></section>
+</div>
+
+<!-- EVENTS -->
+<div class="page" data-page="events">
+  <div class="phero"><div class="wrap">
+    <span class="eyebrow">Events</span>
+    <h1>GLOCAL events</h1>
+    <p class="sub">Workshops, LegisTALK sessions, and community socials — many count toward your volunteer hours.</p>
+    <div class="btnrow"><a class="btn primary" data-go="how">How hours work</a></div>
+  </div></div>
+  <section class="block" style="border-bottom:0"><div class="wrap">
+    <div class="cards">
+      <div class="card"><div class="ic">🗓️</div><h3>Daily NYSN info sessions</h3><p>Weekdays at 12 PM and 3 PM EDT — learn how to join.</p></div>
+      <div class="card"><div class="ic">🏛️</div><h3>LegisTALK series</h3><p>Conversations with senators, MPs, and scholars on civic life.</p></div>
+      <div class="card"><div class="ic">🎉</div><h3>Showcases &amp; socials</h3><p>Meet other members in Toronto, Ottawa, Vancouver, and online.</p></div>
+    </div>
+  </div></section>
+</div>
+
+<!-- ABOUT -->
+<div class="page" data-page="about">
+  <div class="phero"><div class="wrap">
+    <span class="eyebrow">About</span>
+    <h1>Who we are</h1>
+    <p class="sub">GLOCAL, the GLOCAL Foundation of Canada, is a national not-for-profit promoting digital civic engagement through local participation and global understanding.</p>
+  </div></div>
+  <section class="block"><div class="wrap">
+    <div class="grid2">
+      <div><div class="kick">Our vision</div><h2>A Canada where every voice shapes the future</h2><p class="lead">We believe no one's potential should go untapped. Through volunteering and innovative initiatives, you can give back, build transferable skills, and bring passion projects to life — on your own terms.</p></div>
+      <div><div class="kick">Our mission</div><h2>Connect local actions with a global perspective</h2><p class="lead">The term GLOCAL captures it: act locally, think globally. We connect young Canadians' efforts to a broader civic engagement framework and a national network of support.</p></div>
+    </div>
+  </div></section>
+  <section class="block" style="border-bottom:0"><div class="wrap">
+    <div class="kick">Our team</div>
+    <h2>Built by young Canadians</h2>
+    <p class="lead">A passionate, diverse team brought together by a vision of a more inclusive, accessible, and engaging Canadian society — supported by a board of directors including academic leaders.</p>
+    <div class="btnrow"><a class="btn" data-go="team">Meet the team</a><a class="btn" data-go="careers">Join us</a></div>
+  </div></section>
+</div>
+
+<!-- TEAM -->
+<div class="page" data-page="team">
+  <div class="phero"><div class="wrap">
+    <span class="eyebrow">About</span>
+    <h1>Team &amp; board</h1>
+    <p class="sub">The people behind GLOCAL — staff, volunteers, and a board of directors guiding our mission.</p>
+  </div></div>
+  <section class="block" style="border-bottom:0"><div class="wrap">
+    <div class="team">
+      <div class="member"><div class="av">FY</div><h4>Faye Ying</h4><p>Founder</p></div>
+      <div class="member"><div class="av">LS</div><h4>Dr. Laura Stephenson</h4><p>Board of Directors</p></div>
+      <div class="member"><div class="av">FC</div><h4>Dr. Fred Cutler</h4><p>Board of Directors</p></div>
+      <div class="member"><div class="av">LO</div><h4>Leo</h4><p>Operations &amp; Compliance Manager</p></div>
+    </div>
+  </div></section>
+</div>
+
+<!-- CAREERS -->
+<div class="page" data-page="careers">
+  <div class="phero"><div class="wrap">
+    <span class="eyebrow">About</span>
+    <h1>Careers at GLOCAL</h1>
+    <p class="sub">Help build civic engagement in Canada. We're always looking to grow our team across the country.</p>
+    <div class="btnrow"><a class="btn primary" data-go="contact">Get in touch</a></div>
+  </div></div>
+  <section class="block" style="border-bottom:0"><div class="wrap">
+    <div class="kick">Why join</div>
+    <h2>Meaningful work, nationwide</h2>
+    <p class="lead">Connect with like-minded people, gain experience in public engagement, and inspire the changes you want to see. Roles span our six tracks — research, data, digital, outreach, communication, and compliance.</p>
+  </div></section>
+</div>
+
+<!-- CONTACT -->
+<div class="page" data-page="contact">
+  <div class="phero"><div class="wrap">
+    <span class="eyebrow">About</span>
+    <h1>Contact us</h1>
+    <p class="sub">We want to hear from you. Check the FAQs first, or send us a message.</p>
+  </div></div>
+  <section class="block" style="border-bottom:0"><div class="wrap">
+    <div class="grid2">
+      <div>
+        <div class="kick">Reach us</div>
+        <h2>Let's connect</h2>
+        <p class="lead">Email <b>admin@glocalfoundation.ca</b><br>204-78 George St, Ottawa, Ontario, K1N 0A8<br>Daily NYSN info sessions weekdays at 12 PM &amp; 3 PM EDT.</p>
+        <a class="btn" data-go="how">Read the FAQs</a>
+      </div>
+      <div class="formcard">
+        <div class="kick">Send a message</div>
+        <label>Name</label><input type="text" placeholder="Your name">
+        <label>Email</label><input type="email" placeholder="you@example.com">
+        <label>Message</label><textarea rows="4" placeholder="How can we help?"></textarea>
+        <div class="btnrow"><button class="btn dark" type="button" onclick="alert('Prototype only — no message sent.')">Send</button></div>
+      </div>
+    </div>
+  </div></section>
+</div>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <div class="brand" style="color:#fff" data-go="home"><span class="glyph">G</span>GLO<span style="color:var(--yellow)">CAL</span></div>
+        <p style="color:#cfcfcf;font-size:13.5px;margin-top:10px;max-width:32ch">Promoting civic participation through local engagement and global understanding across Canada.</p>
+      </div>
+      <div>
+        <h5>Programs</h5>
+        <a data-go="volunteering">Online Volunteering</a>
+        <a data-go="microgrants">Microgrants</a>
+        <a data-go="essay">Civic Essay Contest</a>
+        <a data-go="youcount">YouCount.ca</a>
+      </div>
+      <div>
+        <h5>Explore</h5>
+        <a data-go="involved">Get Involved</a>
+        <a data-go="how">How It Works &amp; FAQs</a>
+        <a data-go="reports">Reports &amp; Publications</a>
+        <a data-go="events">Events</a>
+        <a data-go="about">About</a>
+        <a data-go="contact">Contact</a>
+      </div>
+    </div>
+    <div class="fine">Prototype of a proposed information architecture · not affiliated with the live GLOCAL site · GLOCAL Foundation of Canada, Ottawa</div>
+  </div>
+</footer>
+
+<script>
+  const nav = document.getElementById('nav');
+  const pages = document.querySelectorAll('.page');
+  const crumb = document.getElementById('crumb');
+
+  const labels = {
+    home:'Home',
+    volunteering:'Programs › Online Volunteering',
+    microgrants:'Programs › Microgrants',
+    essay:'Programs › Civic Essay Contest',
+    youcount:'Programs › YouCount.ca',
+    involved:'Get Involved',
+    how:'Resources › How It Works & FAQs',
+    education:'Resources › Educational Resources',
+    reports:'Resources › Reports & Publications',
+    events:'Events',
+    about:'About › Our Story',
+    team:'About › Team & Board',
+    careers:'About › Careers',
+    contact:'About › Contact'
+  };
+
+  function closeMenus(){ nav.querySelectorAll('.navitem').forEach(i=>i.classList.remove('open')); }
+
+  function go(key){
+    const target = document.querySelector('.page[data-page="'+key+'"]');
+    if(!target) return;
+    pages.forEach(p=>p.classList.remove('active'));
+    target.classList.add('active');
+    crumb.innerHTML = key==='home' ? 'Home'
+      : labels[key].replace(/›\s([^›]+)$/,'› <b>$1</b>').replace(/^([^›]+)$/,'<b>$1</b>');
+    closeMenus();
+    window.scrollTo({top:0,behavior:'auto'});
+  }
+
+  document.addEventListener('click', e=>{
+    const menuBtn = e.target.closest('[data-menu]');
+    if(menuBtn){
+      const item = menuBtn.closest('.navitem');
+      const open = item.classList.contains('open');
+      closeMenus();
+      if(!open) item.classList.add('open');
+      e.stopPropagation();
+      return;
+    }
+    const link = e.target.closest('[data-go]');
+    if(link){ e.preventDefault(); go(link.dataset.go); return; }
+    if(!e.target.closest('.navitem')) closeMenus();
+  });
+</script>
+</body>
+</html>
