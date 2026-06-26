@@ -9,10 +9,6 @@ proposes a cleaner 6-item structure and lets reviewers experience and test it.
 
 ## 🔗 View the live prototype
 
-- 🌐 **Full clickable site:** https://m3dya.github.io/glocalofcanada-ai-prototype/site.html
-- 📊 **Analysis + survey + walkthrough:** https://m3dya.github.io/glocalofcanada-ai-prototype/index.html
-- 📝 **Take the survey (Typeform, ~3 min):** https://form.typeform.com/to/MO4HNBTO
-
 ## Try it locally
 
 1. Click **Code → Download ZIP** and unzip, or open `site.html` and click **Raw → save the page**.
